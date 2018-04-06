@@ -48,6 +48,6 @@ size_t Block::generateHash()
 bool Block::isHashValid() {return generateHash() == getHash();}
 
 void Block::proofOfWork() {
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(120));
 }
 

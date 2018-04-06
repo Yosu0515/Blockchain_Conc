@@ -41,6 +41,11 @@ Block *Blockchain::getLatestBlock()
 
 void Blockchain::addBlock(TransactionData d)
 {
+    /**
+     * TODO
+     * make index get future value of chain size?
+     */
+
     auto index = (int)chain.size();
     std::size_t previousHash = (int)chain.size() > 0 ? getLatestBlock()->getHash() : 0;
     Block newBlock(index, std::move(d), previousHash, false);
