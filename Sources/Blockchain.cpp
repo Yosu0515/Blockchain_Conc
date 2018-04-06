@@ -88,5 +88,6 @@ void Blockchain::printChain() {
         printf("\nHash: %zu", currentBlock.getHash());
         printf("\nPrevious Hash: %zu", currentBlock.getPreviousHash());
         printf("\nIs Block Valid?: %d", currentBlock.isHashValid());
+        printf("\nIs Chain Valid?: %d", isChainValid());
     }
 }

@@ -11,7 +11,7 @@ private:
     size_t generateHash();
 
 public:
-    // Constuctor
+    // Constructor
     Block(int idx, TransactionData d, size_t prevHash);
 
     // Get Index

@@ -8,33 +8,65 @@
 int main()
 {
     // Start Blockchain
-    Blockchain awesomeCoin;
+    Blockchain alpha_chain;
 
-    // Data for first block
-    time_t data1Time;
-    TransactionData data1(1.5, "Joe", "Sally", time(&data1Time));
-    awesomeCoin.addBlock(data1);
+    while(true){
 
-    time_t data2Time;
-    TransactionData data2(0.2233, "Martha", "Fred", time(&data2Time));
-    awesomeCoin.addBlock(data2);
+        std::string sender;
+        std::string receiver;
+        size_t transaction_amount;
 
-    // Let's see what's in the awesomeCoin blockchain!
-    awesomeCoin.printChain();
+        std::cout << "\n\nEnter your name\n";
+        std::cin >> sender;
 
-    // Is it valid?
-    printf("\nIs chain still valid? %d\n", awesomeCoin.isChainValid());
+        std::cout << "Enter receivers name\n";
+        std::cin >> receiver;
 
-    // Someone's getting sneaky
-    Block *hackBlock = awesomeCoin.getLatestBlock();
-    hackBlock->data.amount = 10000; // Oh yeah!
-    hackBlock->data.receiverKey = "Jon"; // mwahahahaha!
+        std::cout << "Enter transaction amount\n";
+        std::cin >> transaction_amount;
 
-    // Let's look at data
-    awesomeCoin.printChain();
+        // Check if last cin was valid
+        while(std::cin.fail()){
+            std::cout << "Invalid input\n";
+            std::cin.clear();
+            std::cin.ignore(256,'\n');
+            std::cout << "Enter transaction amount\n";
+            std::cin >> transaction_amount;
+        }
 
-    // Awww! Why is it not valid?
-    printf("\nIs chain still valid? %d\n", awesomeCoin.isChainValid());
+        /**
+         * TODO
+         * Make concurrent
+         */
+        time_t data_time;
+        TransactionData data(transaction_amount, sender, receiver, time(&data_time));
+        alpha_chain.addBlock(data);
+
+        char decider;
+        std::cout << "Continue or check blockchain? (y/n/b)\n";
+        std::cin >> decider;
+
+        // Check if last cin was valid
+        while(std::cin.fail()){
+            std::cout << "Invalid input\n";
+            std::cin.clear();
+            std::cin.ignore(256,'\n');
+            std::cout << "Continue or check blockchain? (y/n/b)\n";
+            std::cin >> decider;
+        }
+
+        if(decider == 'b'){
+            alpha_chain.printChain();
+        }
+        else if(decider == 'n'){
+            break;
+        }
+    }
+
+//    // Someone's getting sneaky
+//    Block *hackBlock = awesomeCoin.getLatestBlock();
+//    hackBlock->data.amount = 10000; // Oh yeah!
+//    hackBlock->data.receiverKey = "Jon"; // mwahahahaha!
 
     return 0;
 }
