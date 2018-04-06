@@ -28,7 +28,7 @@ Block Blockchain::createGenesisBlock()
     TransactionData d(0, "Genesis", "Genesis", time(&current));
 
     // Return Genesis Block
-    Block genesis(0, d, 0);
+    Block genesis(0, d, 0, true);
     return genesis;
 }
 
@@ -43,7 +43,7 @@ void Blockchain::addBlock(TransactionData d)
 {
     auto index = (int)chain.size();
     std::size_t previousHash = (int)chain.size() > 0 ? getLatestBlock()->getHash() : 0;
-    Block newBlock(index, std::move(d), previousHash);
+    Block newBlock(index, std::move(d), previousHash, false);
     chain.push_back(newBlock);
 }
 

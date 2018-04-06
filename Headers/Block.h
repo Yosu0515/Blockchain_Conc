@@ -6,13 +6,14 @@ class Block
 {
 private:
     int index;
+    bool is_genesis_block;
     size_t blockHash;
     size_t previousHash;
     size_t generateHash();
 
 public:
     // Constructor
-    Block(int idx, TransactionData d, size_t prevHash);
+    Block(int idx, TransactionData d, size_t prevHash, bool is_genesis_block);
 
     // Get Index
     int getIndex();
@@ -29,5 +30,8 @@ public:
 
     // Validate Hash
     bool isHashValid();
+
+    // Proof of Work
+    void proofOfWork();
 };
 
