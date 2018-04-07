@@ -6,6 +6,9 @@
 #include "../Headers/Block.h"
 #include <iostream>
 
+// required for increasing vector size (calls default constructor)
+Block::Block() = default;
+
 // Constructor with params
 Block::Block(int idx, TransactionData d, size_t prevHash, bool is_genesis_block) : index(idx), data(std::move(d)), previousHash(prevHash), is_genesis_block(is_genesis_block)
 {
@@ -48,6 +51,8 @@ size_t Block::generateHash()
 bool Block::isHashValid() { return generateHash() == getHash(); }
 
 void Block::proofOfWork() {
-	std::this_thread::sleep_for(std::chrono::seconds(120));
+
+	// ??? wtf is dit?
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 

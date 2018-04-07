@@ -12,6 +12,7 @@ private:
 	size_t generateHash();
 
 public:
+	Block();
 	// Constructor
 	Block(int idx, TransactionData d, size_t prevHash, bool is_genesis_block);
 

@@ -6,6 +6,8 @@
 #include "../Headers/Block.h"
 #include "../Headers/Blockchain.h"
 
+#define btoa(x) ((x)?"true":"false")
+
 // Blockchain Constructor
 Blockchain::Blockchain()
 {
@@ -41,37 +43,36 @@ Block *Blockchain::getLatestBlock()
 
 void Blockchain::addBlock(TransactionData d)
 {
-	/**
-	 * TODO
-	 * make index get future value of chain size?
-	 */
+	const int i = chain.size();
 
-	auto index = (int)chain.size();
-	std::size_t previousHash = (int)chain.size() > 0 ? getLatestBlock()->getHash() : 0;
-	Block newBlock(index, std::move(d), previousHash, false);
-	chain.push_back(newBlock);
+	// add a new space for the next block
+	chain.resize(i);
+
+	// get the previous hash
+	const std::size_t previousHash = i > 0
+		? getLatestBlock()->getHash()
+		: 0;
+
+	// now make the new block
+	Block newBlock(i, std::move(d), previousHash, false);
+
+	// now place it at the predefined location
+	chain.emplace(chain.begin() + i, newBlock);
 }
 
 bool Blockchain::isChainValid()
 {
-	std::vector<Block>::iterator it;
-
-	for (it = chain.begin(); it != chain.end(); ++it)
+	for (auto& block : chain)
 	{
-		Block currentBlock = *it;
-		if (!currentBlock.isHashValid())
-		{
+		if (!block.isHashValid())
 			return false;
-		}
 
 		// Don't forget to check if this is the first item
-		if (it != chain.begin())
+		if (block.getIndex() > 0)
 		{
-			Block previousBlock = *(it - 1);
-			if (currentBlock.getPreviousHash() != previousBlock.getHash())
-			{
+			Block previousBlock = chain.at(block.getIndex() - 1);
+			if (block.getPreviousHash() != previousBlock.getHash())
 				return false;
-			}
 		}
 	}
 
@@ -79,20 +80,17 @@ bool Blockchain::isChainValid()
 }
 
 void Blockchain::printChain() {
-	std::vector<Block>::iterator it;
-
-	for (it = chain.begin(); it != chain.end(); ++it)
+	for (auto& block : chain)
 	{
-		Block currentBlock = *it;
 		printf("\n\nBlock ===================================");
-		printf("\nIndex: %d", currentBlock.getIndex());
-		printf("\nAmount: %f", currentBlock.data.amount);
-		printf("\nSenderKey: %s", currentBlock.data.senderKey.c_str());
-		printf("\nReceiverKey: %s", currentBlock.data.receiverKey.c_str());
-		printf("\nTimestamp: %ld", currentBlock.data.timestamp);
-		printf("\nHash: %zu", currentBlock.getHash());
-		printf("\nPrevious Hash: %zu", currentBlock.getPreviousHash());
-		printf("\nIs Block Valid?: %d", currentBlock.isHashValid());
-		printf("\nIs Chain Valid?: %d", isChainValid());
+		printf("\nIndex: %d", block.getIndex());
+		printf("\nAmount: %f", block.data.amount);
+		printf("\nSenderKey: %s", block.data.senderKey.c_str());
+		printf("\nReceiverKey: %s", block.data.receiverKey.c_str());
+		printf("\nTimestamp: %ld", block.data.timestamp);
+		printf("\nHash: %zu", block.getHash());
+		printf("\nPrevious Hash: %zu", block.getPreviousHash());
+		printf("\nIs Block Valid?: %s", btoa(block.isHashValid()));
+		printf("\nIs Chain Valid?: %s", btoa(isChainValid()));
 	}
 }
