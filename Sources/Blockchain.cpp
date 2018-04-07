@@ -9,90 +9,90 @@
 // Blockchain Constructor
 Blockchain::Blockchain()
 {
-    Block genesis = createGenesisBlock();
-    chain.push_back(genesis);
+	Block genesis = createGenesisBlock();
+	chain.push_back(genesis);
 }
 
 // Public Chain Getter
 std::vector<Block> Blockchain::getChain() {
-    return chain;
+	return chain;
 }
 
 // Create Genesis Block
 Block Blockchain::createGenesisBlock()
 {
-    // Get Current Time
-    std::time_t current;
+	// Get Current Time
+	std::time_t current;
 
-    // Setup Initial Transaction Data
-    TransactionData d(0, "Genesis", "Genesis", time(&current));
+	// Setup Initial Transaction Data
+	TransactionData d(0, "Genesis", "Genesis", time(&current));
 
-    // Return Genesis Block
-    Block genesis(0, d, 0, true);
-    return genesis;
+	// Return Genesis Block
+	Block genesis(0, d, 0, true);
+	return genesis;
 }
 
 // We only need pointer here
 // to demonstrate manipulation of transaction data
 Block *Blockchain::getLatestBlock()
 {
-    return &chain.back();
+	return &chain.back();
 }
 
 void Blockchain::addBlock(TransactionData d)
 {
-    /**
-     * TODO
-     * make index get future value of chain size?
-     */
+	/**
+	 * TODO
+	 * make index get future value of chain size?
+	 */
 
-    auto index = (int)chain.size();
-    std::size_t previousHash = (int)chain.size() > 0 ? getLatestBlock()->getHash() : 0;
-    Block newBlock(index, std::move(d), previousHash, false);
-    chain.push_back(newBlock);
+	auto index = (int)chain.size();
+	std::size_t previousHash = (int)chain.size() > 0 ? getLatestBlock()->getHash() : 0;
+	Block newBlock(index, std::move(d), previousHash, false);
+	chain.push_back(newBlock);
 }
 
 bool Blockchain::isChainValid()
 {
-    std::vector<Block>::iterator it;
+	std::vector<Block>::iterator it;
 
-    for (it = chain.begin(); it != chain.end(); ++it)
-    {
-        Block currentBlock = *it;
-        if (!currentBlock.isHashValid())
-        {
-            return false;
-        }
+	for (it = chain.begin(); it != chain.end(); ++it)
+	{
+		Block currentBlock = *it;
+		if (!currentBlock.isHashValid())
+		{
+			return false;
+		}
 
-        // Don't forget to check if this is the first item
-        if (it != chain.begin())
-        {
-            Block previousBlock = *(it - 1);
-            if (currentBlock.getPreviousHash() != previousBlock.getHash())
-            {
-                return false;
-            }
-        }
-    }
+		// Don't forget to check if this is the first item
+		if (it != chain.begin())
+		{
+			Block previousBlock = *(it - 1);
+			if (currentBlock.getPreviousHash() != previousBlock.getHash())
+			{
+				return false;
+			}
+		}
+	}
 
-    return true;
+	return true;
 }
 
 void Blockchain::printChain() {
-    std::vector<Block>::iterator it;
+	std::vector<Block>::iterator it;
 
-    for (it = chain.begin(); it != chain.end(); ++it)
-    {
-        Block currentBlock = *it;
-        printf("\n\nBlock ===================================");
-        printf("\nIndex: %d", currentBlock.getIndex());
-        printf("\nAmount: %f", currentBlock.data.amount);
-        printf("\nSenderKey: %s", currentBlock.data.senderKey.c_str());
-        printf("\nReceiverKey: %s", currentBlock.data.receiverKey.c_str());
-        printf("\nTimestamp: %ld", currentBlock.data.timestamp);
-        printf("\nHash: %zu", currentBlock.getHash());
-        printf("\nPrevious Hash: %zu", currentBlock.getPreviousHash());
-        printf("\nIs Block Valid?: %d", currentBlock.isHashValid());
-        printf("\nIs Chain Valid?: %d", isChainValid());
-    }
+	for (it = chain.begin(); it != chain.end(); ++it)
+	{
+		Block currentBlock = *it;
+		printf("\n\nBlock ===================================");
+		printf("\nIndex: %d", currentBlock.getIndex());
+		printf("\nAmount: %f", currentBlock.data.amount);
+		printf("\nSenderKey: %s", currentBlock.data.senderKey.c_str());
+		printf("\nReceiverKey: %s", currentBlock.data.receiverKey.c_str());
+		printf("\nTimestamp: %ld", currentBlock.data.timestamp);
+		printf("\nHash: %zu", currentBlock.getHash());
+		printf("\nPrevious Hash: %zu", currentBlock.getPreviousHash());
+		printf("\nIs Block Valid?: %d", currentBlock.isHashValid());
+		printf("\nIs Chain Valid?: %d", isChainValid());
+	}
 }
