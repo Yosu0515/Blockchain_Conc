@@ -3,6 +3,7 @@
 #include <mutex>
 #include <vector>
 #include <deque>
+#include <c++/4.8.3/condition_variable>
 
 /*
 * A thread pool is a group of pre-instantiated, idle worker threads which stand ready to be given work.
@@ -87,7 +88,7 @@ inline ThreadPool::~ThreadPool()
 template<class F>
 void ThreadPool::enqueue(F f)
 {
-	// make unqiue lock with the mutex
+	// make unique lock with the mutex
 	unique_lock<mutex> lock(queue_mutex_);
 	tasks_.push_back(function<void()>(f));
 	cv_.notify_one(); // wake up one of the blocked consumers

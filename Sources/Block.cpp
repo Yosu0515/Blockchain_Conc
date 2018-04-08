@@ -4,8 +4,10 @@
 #include <thread>
 
 #include "../Headers/Block.h"
+#include "../Headers/Threadpool.h"
 #include <iostream>
 #include <random>
+#include <c++/4.8.3/atomic>
 
 // required for increasing vector size (calls default constructor)
 Block::Block() = default;
@@ -39,19 +41,23 @@ size_t Block::getPreviousHash() { return previousHash; }
 size_t Block::generateHash()
 {
 	// obtain a seed from the system clock:
-	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	unsigned seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
 	std::mt19937 generator(seed);// mt19937 is a standard mersenne_twister_engine
-	randHashNumber = generator(); // generate random 32 bit number
+	randHashNumber = static_cast<int32_t>(generator()); // generate random 32 bit number
+    randHashNumber = abs(randHashNumber);
+    std::cout << "Random hash number: " << randHashNumber << std::endl;
 	// TODO make more random? 20% now
-	minNumber = randHashNumber * 0.8;
-	maxNumber = randHashNumber * 1.2;
+	minNumber = static_cast<size_t>(randHashNumber * 0.9995);
+	std::cout << "Min number: " << minNumber << std::endl;
+	maxNumber = static_cast<size_t>(randHashNumber * 1.0005);
+	std::cout << "Max number: " <<  maxNumber << std::endl;
 	return tryGenerateHash(randHashNumber);
 }
 
 size_t Block::tryGenerateHash(int32_t number)
 {
 	// creating string of transaction data
-	std::string toHashS = std::to_string(data.amount) + data.receiverKey + data.senderKey + std::to_string(data.timestamp) + std::to_string(randHashNumber);
+	std::string toHashS = std::to_string(data.amount) + data.receiverKey + data.senderKey + std::to_string(data.timestamp) + std::to_string(number);
 
 	// 2 hashes to combine
 	std::hash<std::string> tDataHash; // hashes transaction data string
@@ -67,21 +73,34 @@ bool Block::proofOfWork(size_t min, size_t max)
 {
 	// TODO make some start at min, some at max (maximize efficiency!)
 
+    ThreadPool thread_pool{ 100 };
+    std::mutex m;
+
 	// try getting the correct hash
 	size_t foundHash = 0;
 	size_t n = min;
 
-	// simulate trying to get the correct hash
-	while (foundHash != blockHash && n <= max)
-	{
-		foundHash = tryGenerateHash(n);
+        // simulate trying to get the correct hash
+    while (foundHash != blockHash && n <= max)
+    {
+        thread_pool.enqueue([&] {
 
-		if (foundHash == blockHash)
-			return true; // found it!
+        m.lock();
+        foundHash = tryGenerateHash(n);
 
-		// try again
-		n++;
-	}
+
+        std::cout << "Trying to solve from thread: " << std::this_thread::get_id() << std::endl;
+        std::cout << "Block hash: " << blockHash << std::endl;
+        std::cout << "Found hash: " << foundHash << std::endl;
+        m.unlock();
+
+        if (foundHash == blockHash)
+            return true; // found it!
+        });
+
+        // try again
+        n++;
+    }
 
 	// not found
 	return false;
