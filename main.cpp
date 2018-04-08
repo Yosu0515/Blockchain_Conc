@@ -13,13 +13,12 @@
 
 int main()
 {
-
 	// Start Blockchain
 	Blockchain blockchain;
 
-	//const size_t pool_size = 8;
+	const size_t pool_size = 8;
 	// Start Thread Pool
-	ThreadPool thread_pool{ 8 };
+	ThreadPool thread_pool{ pool_size };
 
 	const string senders[3] = {
 
@@ -30,68 +29,70 @@ int main()
 		"Kleis", "Jan", "Obe"
 	};
 
-	atomic<int> cur_block_i(0); // at 0, +1 = 1, don't do genesis block
-	const int max_block_i = 10;
-	atomic<int> lastProven(0);
-	atomic<int> num_finished(0);
-	atomic<int> steps_taken(0);
-	std::mutex mtx;           // mutex for critical section
-	//string foundHash = "0";
+	// the current block index in the blockchain, used by the tasks
+	atomic<int> cur_block_i(0);
 
-	// let's make 10 blocks for 'simulation'
+	// the total amount of blocks we 'simulate'
+	const int max_block_i = 10;
+
+	// the index of the last proven block
+	atomic<int> lastProven(0);
+
+	// the number of finished tasks
+	atomic<int> num_finished(0);
+
+	// the number of total steps taken by tasks
+	atomic<int> steps_taken(0);
+
+	// let's make # blocks for 'simulation'
 	srand(time(nullptr)); //initialize the random seed
 	for (int i = 0; i < max_block_i; ++i)
 	{
+		// random sender
 		const auto sender = senders[rand() % sizeof senders / sizeof senders[0]];
+		// random receiver
 		const auto receiver = receivers[rand() % sizeof receivers / sizeof receivers[0]];
-		int randt = rand() % 4950 + 50;
-		const size_t transaction_amount = randt; // generate a random transaction amount
+		// generate a random transaction amount
+		const size_t transaction_amount = rand() % 4950 + 50;
 
+		// add new block to the blockchain
 		time_t data_time;
 		const TransactionData data(transaction_amount, sender, receiver, time(&data_time));
-		blockchain.addBlock(data);
+		blockchain.add_block(data);
 	}
 
-	// We don't want proof of work on the genesis block
-	//if (!is_genesis_block) {
-	//	std::cout << "Starting proof of work for block " << idx << std::endl;
-	//	const bool success = proofOfWork(minNumber, maxNumber, );
-	//	std::cout << "Proof of work " << (success ? "succeeded" : "failed") << " for block " << idx << std::endl;
+	// quick check for some clashes, mainly used for debug
+	//vector<string> hashes;
+	//vector<int32_t> numbers;
+	//for (auto &block : blockchain.getChain())
+	//{
+	//	if (std::find(hashes.begin(), hashes.end(), block.getHash()) != std::end(hashes))
+	//	{
+	//		// clash!
+	//		std::ostringstream msg;
+	//		msg << "Clash at " << block.getIndex() << ", hash:" << block.getHash() << std::endl;
+	//		printf_s(msg.str().c_str());
+	//	}
+	//	else
+	//		hashes.push_back(block.getHash());
+
+	//	if (std::find(numbers.begin(), numbers.end(), block.randHashNumber) != std::end(numbers))
+	//	{
+	//		// clash!
+	//		std::ostringstream msg;
+	//		msg << "Clash at " << block.getIndex() << ", number:" << block.randHashNumber << std::endl;
+	//		printf_s(msg.str().c_str());
+	//	}
+	//	else
+	//		numbers.push_back(block.randHashNumber);
+
 	//}
 
 	// all workers try to 'prove the work'
-
-	vector<string> hashes;
-	vector<int32_t> numbers;
-	for (auto &block : blockchain.getChain())
-	{
-		if (std::find(hashes.begin(), hashes.end(), block.getHash()) != std::end(hashes))
-		{
-			// clash!
-			std::ostringstream msg;
-			msg << "Clash at " << block.getIndex() << ", hash:" << block.getHash() << std::endl;
-			printf_s(msg.str().c_str());
-		}
-		else
-			hashes.push_back(block.getHash());
-
-		if (std::find(numbers.begin(), numbers.end(), block.randHashNumber) != std::end(numbers))
-		{
-			// clash!
-			std::ostringstream msg;
-			msg << "Clash at " << block.getIndex() << ", number:" << block.randHashNumber << std::endl;
-			printf_s(msg.str().c_str());
-		}
-		else
-			numbers.push_back(block.randHashNumber);
-
-	}
-
-	vector<string> hashes2;
-
 	while (true)
 	{
-		if (lastProven != cur_block_i)
+		// if the last proven is not the one we work on, keep going
+		if (lastProven != cur_block_i && num_finished < 7)
 			continue;
 
 		// wait for all wasks to finish
@@ -112,29 +113,30 @@ int main()
 		// move on to next block
 		++cur_block_i;
 
-
-
-		for (int i = 0; i < 8; ++i)
+		// for pool size, enqueue new tasks
+		for (int i = 0; i < pool_size; ++i)
 		{
 			int task_i = i;
 			thread_pool.enqueue([&, task_i]
 			{
 				// current block to prove
-				Block block = blockchain.getChain()[cur_block_i];
+				Block block = blockchain.get_chain()[cur_block_i];
 
 				// the real hash we need to find
-				string realHash = block.getHash();
-				int blockI = block.getIndex();
-				string blockPrevHash = block.getPreviousHash();
-				string prevBlockHash = blockchain.getChain()[blockI - 1].getHash();
+				string realHash = block.get_hash();
+				int blockI = block.get_index();
+				string blockPrevHash = block.get_previous_hash();
+				string prevBlockHash = blockchain.get_chain()[blockI - 1].get_hash();
 
+				// if the previous hash doesnt match the hash of the previous block
+				// then this block is invalid
 				if (blockPrevHash != prevBlockHash)
 				{
 					lastProven = cur_block_i.load();
 					std::ostringstream msg;
 					msg << "Thread " << std::this_thread::get_id() << " failed to prove block " << cur_block_i << " because previous hash does not match"
 						<< std::endl << "Block prev hash: " << blockPrevHash
-						<< std::endl << "Actaul prev hash: " << block.getHash()
+						<< std::endl << "Actaul prev hash: " << block.get_hash()
 						<< std::endl << std::endl;
 					printf_s(msg.str().c_str());
 
@@ -142,34 +144,43 @@ int main()
 				}
 
 				// spread search space to fasten the search
-				bool startAtMin = task_i < 4;
-				int incrementStep = task_i % 4 + 1;
-				size_t n = startAtMin ? block.minNumber : block.maxNumber;
+				// half tasks go from min->max, other half max->min, and each task at different increments
+				/*
+				 *
+				 *	1+1=2+4 = 6 + 4 = 10 etc.
+					1+2=3+4 = 7 + 4 = 11 etc.
+					1+3=4+4 = 8 + 4 = 12 etc.
+					1+4=5+4 = 9 + 4 = 13 etc.
+				 */
+				 // essentially, each task's increment is offset by 1
+				bool startAtMin = task_i < pool_size / 2;
+				size_t n = startAtMin ? block.min_number + task_i : block.max_number - task_i;
 
 				// simulate trying to get the correct hash
-				while ((startAtMin && n <= block.maxNumber) || (!startAtMin && n >= block.minNumber))
+				while ((startAtMin && n <= block.max_number) || (!startAtMin && n >= block.min_number))
 				{
-					// if we were proven
-					if (lastProven >= block.getIndex())
+					// if we were proven, go out
+					if (lastProven >= block.get_index())
 						break;
 
 					++steps_taken;
 
 					// try getting hash with number n
-					string foundHash = block.tryGenerateHash(n);
+					string foundHash = block.try_generate_hash(n);
 
 					// the hash we found is a match
-					if (foundHash == realHash
-						&& prevBlockHash == blockPrevHash)
+					if (foundHash == realHash)
 					{
-						if (lastProven >= block.getIndex())
+						// if we were proven, go out
+						if (lastProven >= block.get_index())
 							break;
 
+						// we are the one to prove this block
 						lastProven = cur_block_i.load();
 						std::ostringstream msg;
 						msg << "Thread " << std::this_thread::get_id() << " proved block " << cur_block_i << " in " << steps_taken << " steps"
 							<< std::endl << "Found: " << foundHash
-							<< std::endl << "Real: " << block.getHash()
+							<< std::endl << "Real: " << block.get_hash()
 							<< std::endl << std::endl;
 						printf_s(msg.str().c_str());
 
@@ -177,7 +188,10 @@ int main()
 					}
 
 					// try again with next value
-					n += startAtMin ? incrementStep : -incrementStep;
+					n += startAtMin ? pool_size : -int(pool_size);
+					// if you have trouble because it takes full cpu load, add this
+					// but adding this makes it very slow, 100-1000ms
+					//std::this_thread::sleep_for(100ms);
 				}
 
 				++num_finished;
@@ -185,11 +199,11 @@ int main()
 		}
 	}
 
-	//    // Someone's getting sneaky
-	//    Block *hackBlock = awesomeCoin.getLatestBlock();
-	//    hackBlock->data.amount = 10000; // Oh yeah!
-	//    hackBlock->data.receiverKey = "Jon"; // mwahahahaha!
-	// await threads
+	// Someone's getting sneaky
+	//Block *hackBlock = blockchain.getLatestBlock();
+	//hackBlock->data.amount = 10000; // Oh yeah!
+	//hackBlock->data.receiverKey = "Jon"; // mwahahahaha!
+// await threads
 	cin.ignore();
 
 	return EXIT_SUCCESS;

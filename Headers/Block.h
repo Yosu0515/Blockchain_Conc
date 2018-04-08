@@ -5,37 +5,37 @@
 class Block
 {
 private:
-	int index;
-	bool is_genesis_block;
-	std::string blockHash;
-	std::string previousHash;
-	std::string generateHash();
+	int index_{};
+	bool is_genesis_block_{};
+	std::string block_hash_;
+	std::string previous_hash_;
+	std::string generate_hash();
 
 public:
 
-	std::string tryGenerateHash(int32_t number);
-	int32_t randHashNumber;
-	size_t minNumber;
-	size_t maxNumber;
+	std::string try_generate_hash(int32_t number) const;
+	int32_t rand_hash_number{};
+	size_t min_number{};
+	size_t max_number{};
 
 	Block();
 	// Constructor
-	Block(int idx, TransactionData d, std::string prevHash, bool is_genesis_block);
+	Block(int idx, TransactionData d, std::string prev_hash, bool is_genesis_block);
 
 	// Get Index
-	int getIndex();
+	int get_index() const;
 
 	// Get Original Hash
-	std::string getHash();
+	std::string get_hash() const;
 
 	// Get Previous Hash
-	std::string getPreviousHash();
+	std::string get_previous_hash() const;
 
 	// Transaction Data
 	// Would ordinarily be a private member with a "getter": getData()
 	TransactionData data;
 
 	// Validate Hash
-	bool isHashValid();
+	bool is_hash_valid();
 };
 
