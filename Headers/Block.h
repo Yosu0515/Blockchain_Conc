@@ -11,6 +11,12 @@ private:
 	size_t previousHash;
 	size_t generateHash();
 
+	size_t tryGenerateHash(int32_t number);
+
+	int32_t randHashNumber;
+	size_t minNumber;
+	size_t maxNumber;
+
 public:
 	Block();
 	// Constructor
@@ -33,6 +39,6 @@ public:
 	bool isHashValid();
 
 	// Proof of Work
-	void proofOfWork();
+	bool proofOfWork(size_t min, size_t max);
 };
 

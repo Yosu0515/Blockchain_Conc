@@ -12,6 +12,7 @@ int main()
 	// Start Blockchain
 	Blockchain alpha_chain;
 
+	//const size_t pool_size = 8;
 	// Start Thread Pool
 	ThreadPool thread_pool{ 8 };
 
@@ -39,10 +40,10 @@ int main()
 			std::cin >> transaction_amount;
 		}
 
-		/**
-		 * TODO
-		 * Make concurrent
-		 */
+		// TODO hard-code some amount of blocks that are going to be checked in the proof of work
+
+		// TODO for the entire pool size, enqueue a new task for each worker to try and get the correct block hash
+		// when one of them succeeds, proceed to the next block
 		time_t data_time;
 
 		thread_pool.enqueue([&] {
