@@ -41,8 +41,13 @@ string Block::generate_hash()
 	std::mt19937 generator(seed);// mt19937 is a standard mersenne_twister_engine
 	rand_hash_number = abs(static_cast<int32_t>(generator())); // generate random 32 bit number
 	// generate a range for search
+#ifndef DEBUG
+	min_number = static_cast<size_t>(rand_hash_number * 0.9999);
+	max_number = static_cast<size_t>(rand_hash_number * 1.0001);
+#else
 	min_number = static_cast<size_t>(rand_hash_number * 0.9995);
 	max_number = static_cast<size_t>(rand_hash_number * 1.0005);
+#endif
 	return try_generate_hash(rand_hash_number);
 }
 

@@ -145,16 +145,11 @@ int main()
 
 				// spread search space to fasten the search
 				// half tasks go from min->max, other half max->min, and each task at different increments
-				/*
-				 *
-				 *	1+1=2+4 = 6 + 4 = 10 etc.
-					1+2=3+4 = 7 + 4 = 11 etc.
-					1+3=4+4 = 8 + 4 = 12 etc.
-					1+4=5+4 = 9 + 4 = 13 etc.
-				 */
-				 // essentially, each task's increment is offset by 1
-				bool startAtMin = task_i < pool_size / 2;
-				size_t n = startAtMin ? block.min_number + task_i : block.max_number - task_i;
+				// essentially, each task's increment is offset by 1
+				int halfpool = int(pool_size / 2);
+				bool startAtMin = task_i < halfpool;
+				int n = int(startAtMin ? block.min_number + task_i : block.max_number - task_i + halfpool);
+				int step = startAtMin ? halfpool : -halfpool;
 
 				// simulate trying to get the correct hash
 				while ((startAtMin && n <= block.max_number) || (!startAtMin && n >= block.min_number))
@@ -188,10 +183,14 @@ int main()
 					}
 
 					// try again with next value
-					n += startAtMin ? pool_size : -int(pool_size);
+					n += step;
+
 					// if you have trouble because it takes full cpu load, add this
 					// but adding this makes it very slow, 100-1000ms
+#ifndef  DEBUG
 					//std::this_thread::sleep_for(100ms);
+#endif
+
 				}
 
 				++num_finished;
