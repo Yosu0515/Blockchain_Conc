@@ -65,27 +65,32 @@ int main()
 			break;
 		else
 		{
+			// wait for all wasks to finish
+			if (!thread_pool.no_tasks())
+				continue;
+
 			cur_block_i++;
 			blockProven = false;
 
 			for (int i = 0; i < 8; ++i)
 			{
-				int n = i;
-				thread_pool.enqueue([&, n] {
+				int i2 = i;
+				thread_pool.enqueue([&, i2] {
 
 					// current block to prove
 					Block block = blockchain.getChain()[cur_block_i];
 
 					// try getting the correct hash
 					size_t foundHash = 0;
-					bool startAtMin = n < 4;
-					int incrementStep = n % 4 + 1;
+					bool startAtMin = i2 < 4;
+					int incrementStep = i2 % 4 + 1;
 					size_t n = startAtMin ? block.minNumber : block.maxNumber;
 
 					// simulate trying to get the correct hash
 					while ((foundHash != block.getHash()
 						&& (startAtMin && n <= block.maxNumber)) || (!startAtMin && n >= block.minNumber))
 					{
+
 						if (blockProven)
 							return;
 
@@ -93,11 +98,15 @@ int main()
 
 						if (foundHash == block.getHash())
 						{
+							if (blockProven)
+								return;
+
 							blockProven = true;
 							stringstream msg;
 							msg << "Thread " << std::this_thread::get_id() << " proved block " << cur_block_i << " found: " << foundHash << ", and real: " << block.getHash() << std::endl;
-							cout << msg.str();							
-							break;
+							cout << msg.str();
+
+							return;
 						}
 
 						// try again with next value

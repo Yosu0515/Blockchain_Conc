@@ -27,6 +27,8 @@ class ThreadPool {
 public:
 	explicit ThreadPool(size_t threads);
 	template<class F> void enqueue(F f);
+
+	bool no_tasks() const;
 	~ThreadPool();
 private:
 	friend class Worker;
@@ -70,6 +72,11 @@ inline ThreadPool::ThreadPool(const size_t threads) : stop_(false)
 {
 	for (size_t i = 0; i < threads; ++i)
 		workers_.emplace_back(Worker(*this));
+}
+
+inline bool ThreadPool::no_tasks() const
+{
+	return tasks_.empty();
 }
 
 inline ThreadPool::~ThreadPool()
