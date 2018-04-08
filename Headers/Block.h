@@ -7,30 +7,29 @@ class Block
 private:
 	int index;
 	bool is_genesis_block;
-	size_t blockHash;
-	size_t previousHash;
-	size_t generateHash();
-
+	std::string blockHash;
+	std::string previousHash;
+	std::string generateHash();
 
 public:
 
-	size_t tryGenerateHash(int32_t number);
+	std::string tryGenerateHash(int32_t number);
 	int32_t randHashNumber;
 	size_t minNumber;
 	size_t maxNumber;
 
 	Block();
 	// Constructor
-	Block(int idx, TransactionData d, size_t prevHash, bool is_genesis_block);
+	Block(int idx, TransactionData d, std::string prevHash, bool is_genesis_block);
 
 	// Get Index
 	int getIndex();
 
 	// Get Original Hash
-	size_t getHash();
+	std::string getHash();
 
 	// Get Previous Hash
-	size_t getPreviousHash();
+	std::string getPreviousHash();
 
 	// Transaction Data
 	// Would ordinarily be a private member with a "getter": getData()

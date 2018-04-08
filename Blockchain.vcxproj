@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="sha256.cpp" />
     <ClCompile Include="Sources\Block.cpp" />
     <ClCompile Include="Sources\Blockchain.cpp" />
   </ItemGroup>
@@ -28,6 +29,7 @@
     <ClInclude Include="Headers\Blockchain.h" />
     <ClInclude Include="Headers\Threadpool.h" />
     <ClInclude Include="Headers\TransactionData.h" />
+    <ClInclude Include="sha256.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

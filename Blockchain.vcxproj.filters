@@ -24,6 +24,9 @@
     <ClCompile Include="Sources\Blockchain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sha256.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Block.h">
@@ -36,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Threadpool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sha256.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

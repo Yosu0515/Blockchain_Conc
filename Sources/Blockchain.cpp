@@ -30,7 +30,7 @@ Block Blockchain::createGenesisBlock()
 	TransactionData d(0, "Genesis", "Genesis", time(&current));
 
 	// Return Genesis Block
-	Block genesis(0, d, 0, true);
+	Block genesis(0, d, "0", true);
 	return genesis;
 }
 
@@ -49,7 +49,7 @@ void Blockchain::addBlock(TransactionData d)
 	chain.resize(i + 1);
 
 	// get the previous hash
-	const std::size_t previousHash = i > 0
+	const std::string previousHash = i > 0
 		? chain[i - 1].getHash()
 		: 0;
 

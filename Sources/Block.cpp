@@ -7,13 +7,15 @@
 #include "../Headers/Threadpool.h"
 #include <iostream>
 #include <random>
+#include "../sha256.h"
+#include <sstream>
 //#include <c++/4.8.3/atomic>
 
 // required for increasing vector size (calls default constructor)
 Block::Block() = default;
 
 // Constructor with params
-Block::Block(int idx, TransactionData d, size_t prevHash, bool is_genesis_block) : index(idx), data(std::move(d)), previousHash(prevHash), is_genesis_block(is_genesis_block)
+Block::Block(int idx, TransactionData d, string prevHash, bool is_genesis_block) : index(idx), data(std::move(d)), previousHash(prevHash), is_genesis_block(is_genesis_block)
 {
 	blockHash = generateHash();
 }
@@ -22,16 +24,16 @@ Block::Block(int idx, TransactionData d, size_t prevHash, bool is_genesis_block)
 int Block::getIndex() { return index; }
 
 // Public Functions
-size_t Block::getHash() { return blockHash; }
+string Block::getHash() { return blockHash; }
 
-size_t Block::getPreviousHash() { return previousHash; }
+string Block::getPreviousHash() { return previousHash; }
 
 /*
  Generates hash for current block
  - Includes previousHash in generation
  - ^ Very important
 */
-size_t Block::generateHash()
+string Block::generateHash()
 {
 	// obtain a seed from the system clock:
 	const unsigned seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
@@ -43,19 +45,34 @@ size_t Block::generateHash()
 	return tryGenerateHash(randHashNumber);
 }
 
-size_t Block::tryGenerateHash(int32_t number)
+// copy paste from Boost lib
+template <class T>
+inline void hash_combine(std::size_t& seed, const T& v)
+{
+	std::hash<T> hasher;
+	seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+string Block::tryGenerateHash(int32_t number)
 {
 	// creating string of transaction data
-	std::string toHashS =
+	const std::string toHashS =
 		std::to_string(data.amount) + data.receiverKey + data.senderKey + std::to_string(data.timestamp)
 		+ std::to_string(number); // important part: include the given number in the attempt
 
 	// 2 hashes to combine
-	std::hash<std::string> tDataHash; // hashes transaction data string
-	std::hash<std::string> prevHash; // re-hashes previous hash (for combination)
+	const std::hash<std::string> tDataHash; // hashes transaction data string
+	const std::hash<std::string> prevHash; // re-hashes previous hash (for combination)
 
 	// combine hashes and get size_t for block hash
-	return tDataHash(toHashS) ^ (prevHash(std::to_string(previousHash)) << 1);
+	//return sha256(tDataHash(toHashS) ^ (prevHash(std::to_string(previousHash)) << 1));
+	auto hash1 = tDataHash(toHashS);
+	const auto hash2 = prevHash(previousHash) << 1;
+	hash_combine(hash1, hash2);
+	stringstream ss;
+	ss << hash1;
+	return sha256(ss.str());
+
 }
 
 bool Block::isHashValid() { return generateHash() == getHash(); }

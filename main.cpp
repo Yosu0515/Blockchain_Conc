@@ -31,6 +31,8 @@ int main()
 	int cur_block_i = 0; // at 0, +1 = 1, don't do genesis block
 	const int max_block_i = 10;
 	bool blockProven = true;
+	int num_finished = 0;
+	int steps_taken = 0;
 
 	// let's make 10 blocks for 'simulation'
 	srand(time(nullptr)); //initialize the random seed
@@ -61,14 +63,20 @@ int main()
 	{
 		if (!blockProven)
 			continue;
-		else if (cur_block_i >= max_block_i)
-			break;
 		else
 		{
 			// wait for all wasks to finish
-			if (!thread_pool.no_tasks())
+			if (blockProven && cur_block_i != 0 && num_finished < 7)
 				continue;
 
+			if (cur_block_i >= max_block_i)
+			{
+				std::cout << "End of proof of work" << std::endl;
+				break;
+			}
+
+			num_finished = 0;
+			steps_taken = 0;
 			cur_block_i++;
 			blockProven = false;
 
@@ -81,7 +89,7 @@ int main()
 					Block block = blockchain.getChain()[cur_block_i];
 
 					// try getting the correct hash
-					size_t foundHash = 0;
+					string foundHash = "0";
 					bool startAtMin = i2 < 4;
 					int incrementStep = i2 % 4 + 1;
 					size_t n = startAtMin ? block.minNumber : block.maxNumber;
@@ -90,35 +98,39 @@ int main()
 					while ((foundHash != block.getHash()
 						&& (startAtMin && n <= block.maxNumber)) || (!startAtMin && n >= block.minNumber))
 					{
-
 						if (blockProven)
-							return;
+							break;
 
+						steps_taken++;
 						foundHash = block.tryGenerateHash(n);
 
 						if (foundHash == block.getHash())
 						{
 							if (blockProven)
-								return;
+								break;
 
 							blockProven = true;
-							stringstream msg;
-							msg << "Thread " << std::this_thread::get_id() << " proved block " << cur_block_i << " found: " << foundHash << ", and real: " << block.getHash() << std::endl;
-							cout << msg.str();
+							std::ostringstream msg;
+							msg << "Thread " << std::this_thread::get_id() << " proved block " << cur_block_i << " in " << steps_taken << " steps"
+								<< std::endl << "Found: " << foundHash
+								<< std::endl << "Real: " << block.getHash()
+								<< std::endl << std::endl;
 
-							return;
+							std::string msgStr = msg.str();
+							printf_s(msgStr.c_str());
+
+							break;
 						}
 
 						// try again with next value
 						n += startAtMin ? incrementStep : -incrementStep;
 					}
 
+					num_finished++;
 				});
 			}
 		}
 	}
-
-	std::cout << "End of proof of work" << std::endl;
 
 	// await threads
 	cin.ignore();
