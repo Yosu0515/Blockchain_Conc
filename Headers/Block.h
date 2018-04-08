@@ -11,13 +11,14 @@ private:
 	size_t previousHash;
 	size_t generateHash();
 
-	size_t tryGenerateHash(int32_t number);
 
+public:
+
+	size_t tryGenerateHash(int32_t number);
 	int32_t randHashNumber;
 	size_t minNumber;
 	size_t maxNumber;
 
-public:
 	Block();
 	// Constructor
 	Block(int idx, TransactionData d, size_t prevHash, bool is_genesis_block);
@@ -37,8 +38,5 @@ public:
 
 	// Validate Hash
 	bool isHashValid();
-
-	// Proof of Work
-	bool proofOfWork(size_t min, size_t max, bool startAtMin);
 };
 

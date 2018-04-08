@@ -59,30 +59,3 @@ size_t Block::tryGenerateHash(int32_t number)
 }
 
 bool Block::isHashValid() { return generateHash() == getHash(); }
-
-bool Block::proofOfWork(size_t min, size_t max, bool startAtMin)
-{
-	// TODO make some start at min, some at max (maximize efficiency!)
-
-	// try getting the correct hash
-	size_t foundHash = 0;
-	size_t n = startAtMin ? min : max;
-
-	// simulate trying to get the correct hash
-	while (foundHash != blockHash && (startAtMin && n <= max) || (!startAtMin && n >= min))
-	{
-
-		foundHash = tryGenerateHash(n);
-
-		if (foundHash == blockHash)
-			return true; // found it!
-
-		// try again
-		n += startAtMin ? 1 : -1;
-
-	}
-
-	// not found
-	return false;
-}
-
