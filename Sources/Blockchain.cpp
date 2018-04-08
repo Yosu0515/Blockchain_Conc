@@ -46,7 +46,7 @@ void Blockchain::addBlock(TransactionData d)
 	const int i = chain.size();
 
 	// add a new space for the next block
-	chain.resize(i);
+	chain.resize(i + 1);
 
 	// get the previous hash
 	const std::size_t previousHash = i > 0
@@ -57,7 +57,7 @@ void Blockchain::addBlock(TransactionData d)
 	Block newBlock(i, std::move(d), previousHash, false);
 
 	// now place it at the predefined location
-	chain.emplace(chain.begin() + i, newBlock);
+	chain.at(i) = newBlock;
 }
 
 bool Blockchain::isChainValid()

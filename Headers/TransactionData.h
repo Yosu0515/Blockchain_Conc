@@ -1,3 +1,4 @@
+#include <utility>
 #pragma once
 
 struct TransactionData
@@ -9,5 +10,7 @@ struct TransactionData
 
 	TransactionData() = default;
 
-	TransactionData(double amt, std::string sender, std::string receiver, time_t time) : amount(amt), senderKey(sender), receiverKey(receiver), timestamp(time) {}
+	TransactionData(double amt, std::string sender, std::string receiver, time_t time) : amount(amt), senderKey(
+		                                                                                     std::move(sender)), receiverKey(
+		                                                                                     std::move(receiver)), timestamp(time) {}
 };
