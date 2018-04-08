@@ -39,6 +39,6 @@ public:
 	bool isHashValid();
 
 	// Proof of Work
-	bool proofOfWork(size_t min, size_t max);
+	bool proofOfWork(size_t min, size_t max, bool startAtMin);
 };
 

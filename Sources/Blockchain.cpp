@@ -50,7 +50,7 @@ void Blockchain::addBlock(TransactionData d)
 
 	// get the previous hash
 	const std::size_t previousHash = i > 0
-		? getLatestBlock()->getHash()
+		? chain[i - 1].getHash()
 		: 0;
 
 	// now make the new block
