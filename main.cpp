@@ -88,6 +88,8 @@ int main()
 
 	//}
 
+	const auto start_all = std::chrono::system_clock::now();
+
 	// all workers try to 'prove the work'
 	while (true)
 	{
@@ -102,7 +104,9 @@ int main()
 		// the last one, we're done
 		if (cur_block_i >= max_block_i)
 		{
-			std::cout << "End of proof of work" << std::endl;
+			const auto end_all = std::chrono::system_clock::now();
+			std::chrono::duration<double> diff_all = end_all - start_all;
+			std::cout << "End of proof of work, total time taken: " << diff_all.count() << "s" << std::endl;
 			break;
 		}
 
@@ -119,6 +123,9 @@ int main()
 			int task_i = i;
 			thread_pool.enqueue([&, task_i]
 			{
+				auto start_thread = std::chrono::system_clock::now();
+				chrono::system_clock::time_point end_thread;
+				std::chrono::duration<double> diff_thread;
 				// current block to prove
 				Block block = blockchain.get_chain()[cur_block_i];
 
@@ -172,8 +179,12 @@ int main()
 
 						// we are the one to prove this block
 						lastProven = cur_block_i.load();
+
+						end_thread = std::chrono::system_clock::now();
+						diff_thread = end_thread - start_thread;
+
 						std::ostringstream msg;
-						msg << "Thread " << std::this_thread::get_id() << " proved block " << cur_block_i << " in " << steps_taken << " steps"
+						msg << "Thread " << std::this_thread::get_id() << " proved block " << cur_block_i << " in " << steps_taken << " steps and " << diff_thread.count() << "s"
 							<< std::endl << "Found: " << foundHash
 							<< std::endl << "Real: " << block.get_hash()
 							<< std::endl << std::endl;
@@ -202,7 +213,8 @@ int main()
 	//Block *hackBlock = blockchain.getLatestBlock();
 	//hackBlock->data.amount = 10000; // Oh yeah!
 	//hackBlock->data.receiverKey = "Jon"; // mwahahahaha!
-// await threads
+
+	// await threads
 	cin.ignore();
 
 	return EXIT_SUCCESS;
